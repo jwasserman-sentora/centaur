@@ -6,6 +6,9 @@
 name: Pilot slackbotv2 image
 
 on:
+  # A push to this branch builds the feature branch; dispatch picks any ref.
+  push:
+    branches: [pilot/genui-image-build]
   workflow_dispatch:
     inputs:
       ref:
@@ -23,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.ref || 'feat/slackbotv2-json-render' }}
           persist-credentials: false
 
       - name: Derive tag
@@ -45,7 +48,7 @@ jobs:
           tags: ${{ steps.tag.outputs.image }}
           outputs: type=docker,dest=/tmp/centaur-slackbotv2.tar
           build-args: |
-            COMMIT_SHA=${{ github.sha }}
+            COMMIT_SHA=${{ steps.tag.outputs.short }}
 
       - name: Compress
         run: gzip -1 /tmp/centaur-slackbotv2.tar && ls -la /tmp/centaur-slackbotv2.tar.gz
